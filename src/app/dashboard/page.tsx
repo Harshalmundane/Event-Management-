@@ -205,7 +205,7 @@ export default function UserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>My Registrations</CardTitle>
-                <CardDescription>Events you ve registered for</CardDescription>
+                <CardDescription>Events you registered for</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -213,19 +213,19 @@ export default function UserDashboard() {
                     userRegistrations.slice(0, 3).map((registration) => (
                       <div key={registration.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{registration.event?.title}</h3>
+                          <h3 className="font-medium text-gray-900">{registration.event?.title || "No event title"}</h3>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
-                              {formatDate(registration.event?.date)}
+                              {registration.event?.date ? formatDate(registration.event.date) : "No date"}
                             </div>
                             <div className="flex items-center">
                               <Clock className="w-4 h-4 mr-1" />
-                              {registration.event?.time}
+                              {registration.event?.time || "No time"}
                             </div>
                             <div className="flex items-center">
                               <MapPin className="w-4 h-4 mr-1" />
-                              {registration.event?.location}
+                              {registration.event?.location || "No location"}
                             </div>
                           </div>
                         </div>
