@@ -7,9 +7,29 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users, LogOut, Bell } from "lucide-react"
 import Link from "next/link"
 
+// Define the Registration interface
+interface Registration {
+  id: string
+  status: "approved" | "pending" | "rejected"
+  approvalDate?: string
+  event?: {
+    title: string
+    date: string
+    time: string
+    location: string
+  }
+}
+
+// Define the Stats interface
+interface DashboardStats {
+  totalRegistered: number
+  approvedRegistrations: number
+  upcomingCount: number
+}
+
 export default function UserDashboard() {
-  const [userRegistrations, setUserRegistrations] = useState([])
-  const [stats, setStats] = useState({
+  const [userRegistrations, setUserRegistrations] = useState<Registration[]>([])
+  const [stats, setStats] = useState<DashboardStats>({
     totalRegistered: 0,
     approvedRegistrations: 0,
     upcomingCount: 0,
@@ -54,9 +74,12 @@ export default function UserDashboard() {
       const data = await response.json()
       if (response.ok) {
         // Count pending and recently updated registrations
-        const pendingCount = data.registrations.filter((reg) => reg.status === "pending").length
+        const pendingCount = data.registrations.filter((reg: Registration) => reg.status === "pending").length
         const recentlyUpdated = data.registrations.filter(
-          (reg) => reg.status !== "pending" && new Date(reg.approvalDate) > new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+          (reg: Registration) =>
+            reg.status !== "pending" &&
+            reg.approvalDate &&
+            new Date(reg.approvalDate) > new Date(Date.now() - 24 * 60 * 60 * 1000),
         ).length
         setNotificationCount(pendingCount + recentlyUpdated)
       }
@@ -83,7 +106,7 @@ export default function UserDashboard() {
     }
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
   }
 
@@ -182,7 +205,7 @@ export default function UserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>My Registrations</CardTitle>
-                <CardDescription>Events you've registered for</CardDescription>
+                <CardDescription>Events you ve registered for</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
