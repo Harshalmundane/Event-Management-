@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import Registration from "@/models/Registration"
 import jwt from "jsonwebtoken"
 
 // Helper function to verify admin token
-async function verifyAdminToken(request: NextRequest) {
+async function verifyAdminToken(request) {
   try {
     const authHeader = request.headers.get("authorization")
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -12,14 +12,14 @@ async function verifyAdminToken(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
     return decoded
   } catch (error) {
     return null
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   try {
     const admin = await verifyAdminToken(request)
     if (!admin) {
