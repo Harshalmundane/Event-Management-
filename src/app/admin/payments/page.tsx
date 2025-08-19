@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,13 +10,41 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, Search, Download, DollarSign, CreditCard, RefreshCw, LogOut } from "lucide-react"
 import Link from "next/link"
 
+// Define interfaces for type safety
+interface Payment {
+  _id: string;
+  eventId?: { title: string; date: string };
+  userId?: { name: string; email: string };
+  paymentId?: string;
+  amountPaid: number;
+  paymentStatus: "completed" | "pending" | "failed" | "refunded";
+  paymentDate?: string;
+  refundAmount?: number;
+  refundDate?: string;
+  refundId?: string;
+}
+
+interface Stats {
+  totalRevenue: number;
+  completedPayments: number;
+  pendingPayments: number;
+  failedPayments: number;
+  refundedPayments: number;
+  totalRefunded: number;
+}
+
+interface ApiResponse {
+  payments: Payment[];
+  stats: Stats;
+}
+
 export default function PaymentsPage() {
-  const [payments, setPayments] = useState([])
-  const [filteredPayments, setFilteredPayments] = useState([])
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [stats, setStats] = useState({
+  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "pending" | "failed" | "refunded">("all")
+  const [stats, setStats] = useState<Stats>({
     totalRevenue: 0,
     completedPayments: 0,
     pendingPayments: 0,
@@ -47,7 +76,7 @@ export default function PaymentsPage() {
       console.log("[v0] API Response ok:", response.ok)
 
       if (response.ok) {
-        const data = await response.json()
+        const data: ApiResponse = await response.json()
         console.log("[v0] API Response data:", data)
         setPayments(data.payments)
         setStats(data.stats)
@@ -62,14 +91,14 @@ export default function PaymentsPage() {
   }
 
   const filterPayments = () => {
-    let filtered = payments
+    let filtered = [...payments]
 
     if (searchTerm) {
       filtered = filtered.filter(
         (payment) =>
-          payment.eventId?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.userId?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.eventId?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           payment.paymentId?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }
@@ -81,7 +110,7 @@ export default function PaymentsPage() {
     setFilteredPayments(filtered)
   }
 
-  const handleRefund = async (registrationId, amount) => {
+  const handleRefund = async (registrationId: string, amount: number) => {
     if (!confirm(`Are you sure you want to refund $${amount.toFixed(2)}?`)) return
 
     try {
@@ -108,7 +137,7 @@ export default function PaymentsPage() {
       ["Date", "Event", "User", "Email", "Amount", "Status", "Refund Info", "Payment ID"].join(","),
       ...filteredPayments.map((payment) =>
         [
-          new Date(payment.paymentDate).toLocaleDateString(),
+          payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : "N/A",
           payment.eventId?.title || "N/A",
           payment.userId?.name || "N/A",
           payment.userId?.email || "N/A",
@@ -130,7 +159,7 @@ export default function PaymentsPage() {
     a.click()
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
         return "bg-green-100 text-green-800"
@@ -145,7 +174,7 @@ export default function PaymentsPage() {
     }
   }
 
-  const formatPrice = (amount) => {
+  const formatPrice = (amount: number) => {
     return `$${amount.toFixed(2)}`
   }
 
@@ -283,7 +312,7 @@ export default function PaymentsPage() {
                   <select
                     id="status"
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={(e) => setStatusFilter(e.target.value as "all" | "completed" | "pending" | "failed" | "refunded")}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="all">All Statuses</option>
