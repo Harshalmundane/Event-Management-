@@ -220,12 +220,7 @@ export default function AdminDashboard() {
                     Payment Management
                   </Button>
                 </Link>
-                <Link href="/admin/analytics">
-                  <Button className="w-full justify-start bg-transparent" variant="outline">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    Payment Analytics
-                  </Button>
-                </Link>
+               
                 <Button className="w-full justify-start bg-transparent" variant="outline">
                   <Settings className="w-4 h-4 mr-2" />
                   System Settings
