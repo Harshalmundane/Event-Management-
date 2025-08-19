@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import Registration from "@/models/Registration"
 import jwt from "jsonwebtoken"
