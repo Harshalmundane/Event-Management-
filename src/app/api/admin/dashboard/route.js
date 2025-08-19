@@ -6,6 +6,11 @@ import Event from "@/models/Event";
 import Registration from "@/models/Registration";
 
 export async function GET(request) {
+  // Skip database operations during build phase
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return NextResponse.json({ message: "Build phase, skipping DB operations" });
+  }
+
   try {
     console.log("[v0] Admin dashboard API called");
 
