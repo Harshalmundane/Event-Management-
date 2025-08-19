@@ -6,7 +6,7 @@ import Event from "@/models/Event";
 import Registration from "@/models/Registration";
 
 export async function GET(request) {
-  // Skip database operations during build phase
+  // Skip database operations during Next.js build phase
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return NextResponse.json({ message: "Build phase, skipping DB operations" });
   }
