@@ -1,7 +1,7 @@
 // src/app/api/user/dashboard/route.js
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb";
+import connectDB from '@/lib/mongodb';
 import Registration from "@/models/Registration";
 import "@/models/Event"; // Ensure Event model is registered
 

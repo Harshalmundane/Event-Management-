@@ -1,7 +1,7 @@
 // src/app/api/user/registrations/route.js
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb";
+import connectDB from '@/lib/mongodb';
 import Registration from "@/models/Registration";
 import "@/models/Event"; // Register Event model
 import "@/models/User"; // Register User model
