@@ -1,34 +1,38 @@
-import { NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
-import { connectDB } from "@/lib/mongodbdb"
-import Registration from "@/models/Registration"
+// src/app/api/user/dashboard/route.js
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { connectDB } from "@/lib/mongodb";
+import Registration from "@/models/Registration";
+import "@/models/Event"; // Ensure Event model is registered
 
 export async function GET(request) {
   try {
-    console.log("[v0] User dashboard API called")
+    console.log("[v0] User dashboard API called");
 
-    const authHeader = request.headers.get("authorization")
+    const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "No token provided" }, { status: 401 })
+      return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1]
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    await connectDB()
+    await connectDB();
 
     // Get user's registrations with event details
     const userRegistrations = await Registration.find({ userId: decoded.userId })
-      .populate("eventId")
-      .sort({ createdAt: -1 })
+      .populate("eventId", "title description date time location") // Specify fields for consistency
+      .sort({ createdAt: -1 });
 
     // Get upcoming events user is registered for
-    const upcomingEvents = userRegistrations.filter((reg) => reg.eventId && new Date(reg.eventId.date) >= new Date())
+    const upcomingEvents = userRegistrations.filter(
+      (reg) => reg.eventId && new Date(reg.eventId.date) >= new Date()
+    );
 
     // Get stats
-    const totalRegistered = userRegistrations.length
-    const approvedRegistrations = userRegistrations.filter((reg) => reg.status === "approved").length
-    const upcomingCount = upcomingEvents.length
+    const totalRegistered = userRegistrations.length;
+    const approvedRegistrations = userRegistrations.filter((reg) => reg.status === "approved").length;
+    const upcomingCount = upcomingEvents.length;
 
     return NextResponse.json({
       stats: {
@@ -44,9 +48,9 @@ export async function GET(request) {
         approvalDate: reg.approvalDate,
         adminMessage: reg.adminMessage,
       })),
-    })
+    });
   } catch (error) {
-    console.error("[v0] User dashboard error:", error)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    console.error("[v0] User dashboard error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

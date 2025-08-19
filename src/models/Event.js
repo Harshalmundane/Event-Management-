@@ -1,4 +1,5 @@
-import mongoose from "mongoose"
+// models/Event.js
+import mongoose from "mongoose";
 
 const EventSchema = new mongoose.Schema(
   {
@@ -7,7 +8,7 @@ const EventSchema = new mongoose.Schema(
     date: { type: Date, required: true },
     time: { type: String, required: true },
     location: { type: String, required: true },
-    image: { type: String }, // URL to uploaded image
+    image: { type: String },
     maxParticipants: { type: Number, default: 100 },
     currentParticipants: { type: Number, default: 0 },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -16,9 +17,7 @@ const EventSchema = new mongoose.Schema(
     price: { type: Number, default: 0, min: 0 },
     currency: { type: String, default: "USD" },
   },
-  {
-    timestamps: true,
-  },
-)
+  { timestamps: true }
+);
 
-export default mongoose.models.Event || mongoose.model("Event", EventSchema)
+export default mongoose.models.Event || mongoose.model("Event", EventSchema);
