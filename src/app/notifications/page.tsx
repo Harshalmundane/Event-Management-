@@ -7,8 +7,26 @@ import { Badge } from "@/components/ui/badge"
 import { Bell, ArrowLeft, LogOut, Calendar, Clock, MapPin, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
+// Define the Event interface for registration.eventId
+interface Event {
+  title: string
+  date: string
+  time: string
+  location: string
+}
+
+// Define the Registration interface
+interface Registration {
+  _id: string
+  status: "approved" | "pending" | "rejected"
+  eventId: Event
+  message?: string
+  registrationDate: string
+  approvalDate?: string
+}
+
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([])
+  const [notifications, setNotifications] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,7 +57,7 @@ export default function NotificationsPage() {
     window.location.href = "/"
   }
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: Registration["status"]) => {
     switch (status) {
       case "approved":
         return <CheckCircle className="w-5 h-5 text-green-600" />
@@ -52,7 +70,7 @@ export default function NotificationsPage() {
     }
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: Registration["status"]) => {
     switch (status) {
       case "approved":
         return "bg-green-100 text-green-800"
@@ -65,7 +83,7 @@ export default function NotificationsPage() {
     }
   }
 
-  const getStatusMessage = (status) => {
+  const getStatusMessage = (status: Registration["status"]) => {
     switch (status) {
       case "approved":
         return "Your registration has been approved! You can attend this event."
@@ -78,7 +96,7 @@ export default function NotificationsPage() {
     }
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -190,11 +208,11 @@ export default function NotificationsPage() {
                     {/* Registration Details */}
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex justify-between items-center text-sm text-gray-500">
-                        <span>Registered on: {new Date(registration.registrationDate).toLocaleDateString()}</span>
+                        <span>Registered on: {formatDate(registration.registrationDate)}</span>
                         {registration.approvalDate && (
                           <span>
                             {registration.status === "approved" ? "Approved" : "Rejected"} on:{" "}
-                            {new Date(registration.approvalDate).toLocaleDateString()}
+                            {formatDate(registration.approvalDate)}
                           </span>
                         )}
                       </div>

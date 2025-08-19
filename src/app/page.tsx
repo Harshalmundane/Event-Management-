@@ -43,7 +43,7 @@ export default function HomePage() {
             <div>
               <h2 className="text-2xl font-bold text-yellow-800 mb-2">Leave Reminder</h2>
               <p className="text-yellow-700 text-lg">
-                Don't forget to set up your leave reminders for upcoming events. Stay organized and never miss important
+                Don not forget to set up your leave reminders for upcoming events. Stay organized and never miss important
                 dates!
               </p>
             </div>

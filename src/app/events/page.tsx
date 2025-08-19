@@ -7,10 +7,30 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Users, LogOut, ArrowLeft, DollarSign, CreditCard } from "lucide-react"
 import Link from "next/link"
 
+// Define the Event interface
+interface Event {
+  _id: string
+  title: string
+  description: string
+  date: string
+  time: string
+  location: string
+  currentParticipants: number
+  maxParticipants: number
+  status: string
+  isFree: boolean
+  price: number
+  currency?: string
+  image?: string
+}
+
+// Define the currency type
+type Currency = "USD" | "EUR" | "GBP" | "INR"
+
 export default function EventsPage() {
-  const [events, setEvents] = useState([])
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const [registering, setRegistering] = useState(null)
+  const [registering, setRegistering] = useState<string | null>(null)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
@@ -31,7 +51,7 @@ export default function EventsPage() {
     }
   }
 
-  const handleRegister = async (eventId, isFree = true, price = 0) => {
+  const handleRegister = async (eventId: string, isFree: boolean = true, price: number = 0) => {
     setRegistering(eventId)
     setMessage("")
 
@@ -75,7 +95,7 @@ export default function EventsPage() {
     window.location.href = "/"
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -84,8 +104,13 @@ export default function EventsPage() {
     })
   }
 
-  const formatPrice = (price, currency = "USD") => {
-    const symbols = { USD: "$", EUR: "€", GBP: "£", INR: "₹" }
+  const formatPrice = (price: number, currency: Currency = "USD") => {
+    const symbols: Record<Currency, string> = {
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      INR: "₹",
+    }
     return `${symbols[currency] || "$"}${price.toFixed(2)}`
   }
 
@@ -175,7 +200,7 @@ export default function EventsPage() {
                           </Badge>
                         ) : (
                           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                            {formatPrice(event.price, event.currency)}
+                            {formatPrice(event.price, event.currency as Currency)}
                           </Badge>
                         )}
                       </div>
@@ -203,7 +228,7 @@ export default function EventsPage() {
                       {!event.isFree && (
                         <div className="flex items-center text-sm text-gray-600">
                           <DollarSign className="w-4 h-4 mr-2" />
-                          Registration Fee: {formatPrice(event.price, event.currency)}
+                          Registration Fee: {formatPrice(event.price, event.currency as Currency)}
                         </div>
                       )}
                     </div>
@@ -222,7 +247,7 @@ export default function EventsPage() {
                       ) : (
                         <>
                           <CreditCard className="w-4 h-4 mr-2" />
-                          Pay & Register ({formatPrice(event.price, event.currency)})
+                          Pay & Register ({formatPrice(event.price, event.currency as Currency)})
                         </>
                       )}
                     </Button>

@@ -10,16 +10,37 @@ import { ArrowLeft, CreditCard, Lock, Calendar, MapPin, Clock } from "lucide-rea
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 
+// Define the Event interface
+interface Event {
+  title: string
+  description: string
+  date: string
+  time: string
+  location: string
+  currency?: string
+}
+
+// Define the PaymentData interface
+interface PaymentData {
+  cardNumber: string
+  expiryDate: string
+  cvv: string
+  cardholderName: string
+}
+
+// Define the Currency type
+type Currency = "USD" | "EUR" | "GBP" | "INR"
+
 export default function PaymentPage() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get("eventId")
   const amount = searchParams.get("amount")
 
-  const [event, setEvent] = useState(null)
+  const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [message, setMessage] = useState("")
-  const [paymentData, setPaymentData] = useState({
+  const [paymentData, setPaymentData] = useState<PaymentData>({
     cardNumber: "",
     expiryDate: "",
     cvv: "",
@@ -46,12 +67,12 @@ export default function PaymentPage() {
     }
   }
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setPaymentData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handlePayment = async (e) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
     setProcessing(true)
     setMessage("")
@@ -66,7 +87,7 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           eventId,
-          amount: Number.parseFloat(amount),
+          amount: Number.parseFloat(amount || "0"),
           paymentData,
         }),
       })
@@ -88,8 +109,13 @@ export default function PaymentPage() {
     }
   }
 
-  const formatPrice = (price, currency = "USD") => {
-    const symbols = { USD: "$", EUR: "€", GBP: "£", INR: "₹" }
+  const formatPrice = (price: number, currency: Currency = "USD") => {
+    const symbols: Record<Currency, string> = {
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      INR: "₹",
+    }
     return `${symbols[currency] || "$"}${price.toFixed(2)}`
   }
 
@@ -173,7 +199,7 @@ export default function PaymentPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold">Total Amount:</span>
                       <span className="text-2xl font-bold text-blue-600">
-                        {formatPrice(Number.parseFloat(amount), event.currency)}
+                        {formatPrice(Number.parseFloat(amount || "0"), event.currency as Currency)}
                       </span>
                     </div>
                   </div>
@@ -266,7 +292,7 @@ export default function PaymentPage() {
                     ) : (
                       <>
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Pay {formatPrice(Number.parseFloat(amount), event.currency)}
+                        Pay {formatPrice(Number.parseFloat(amount || "0"), event.currency as Currency)}
                       </>
                     )}
                   </Button>
