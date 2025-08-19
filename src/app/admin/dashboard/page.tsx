@@ -4,8 +4,32 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, Settings, LogOut, Clock, MapPin, DollarSign, BarChart3 } from "lucide-react"
+import { Users, Calendar, Settings, LogOut, Clock, MapPin, DollarSign } from "lucide-react"
 import Link from "next/link"
+
+// Define interface for the API response data
+interface DashboardData {
+  stats: {
+    totalUsers: number;
+    totalEvents: number;
+    activeEvents: number;
+    pendingApprovals: number;
+  };
+  adminEvents: {
+    _id: string;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    registrationCount: number;
+    pendingCount: number;
+  }[];
+  recentActivities: {
+    message: string;
+    status: "approved" | "rejected" | "pending";
+    time: string;
+  }[];
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -15,8 +39,8 @@ export default function AdminDashboard() {
     pendingApprovals: 0,
   })
 
-  const [adminEvents, setAdminEvents] = useState([])
-  const [recentActivities, setRecentActivities] = useState([])
+  const [adminEvents, setAdminEvents] = useState<DashboardData["adminEvents"]>([])
+  const [recentActivities, setRecentActivities] = useState<DashboardData["recentActivities"]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,7 +57,7 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        const data = await response.json()
+        const data: DashboardData = await response.json()
         setStats(data.stats)
         setAdminEvents(data.adminEvents)
         setRecentActivities(data.recentActivities)
@@ -50,11 +74,11 @@ export default function AdminDashboard() {
     window.location.href = "/"
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
   }
 
-  const getActivityColor = (status) => {
+  const getActivityColor = (status: string) => {
     switch (status) {
       case "approved":
         return "bg-green-500"
@@ -220,7 +244,6 @@ export default function AdminDashboard() {
                     Payment Management
                   </Button>
                 </Link>
-               
                 <Button className="w-full justify-start bg-transparent" variant="outline">
                   <Settings className="w-4 h-4 mr-2" />
                   System Settings
