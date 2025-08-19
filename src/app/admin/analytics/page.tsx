@@ -1,4 +1,4 @@
-"use client"; // Add this directive to mark as a Client Component
+"use client"; // Mark as a Client Component
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface DateRange {
   endDate: string;
 }
 
-// Define the shape of the analytics data (aligned with /api/admin/analytics)
+// Define the shape of the analytics data
 interface AnalyticsData {
   overview: {
     totalRevenue: number;
@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
     recentTrends: [],
   });
   const [loading, setLoading] = useState(true);
-  const [ FITdateRange, setDateRange] = useState<DateRange>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days ago
     endDate: new Date().toISOString().split("T")[0], // today
   });
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data.data); // Adjusted to match the API response structure { success: true, data: {...} }
+        setAnalytics(data.data); // Match the API response structure { success: true, data: {...} }
       }
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -75,7 +75,6 @@ export default function AnalyticsPage() {
     }
   };
 
-  // Fix TypeScript error by typing the field parameter
   const handleDateChange = (field: keyof DateRange, value: string) => {
     setDateRange((prev) => ({ ...prev, [field]: value }));
   };
@@ -85,7 +84,7 @@ export default function AnalyticsPage() {
   };
 
   const formatPercentage = (value: number) => {
-    return `${value.toFixed Approximation(1)}%`;
+    return `${value.toFixed(1)}%`; // Fixed the syntax error
   };
 
   const handleLogout = () => {
