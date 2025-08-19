@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/mongodb"
+import connectDB from "@/lib/mongodbdb"
 import Registration from "@/models/Registration"
 import jwt from "jsonwebtoken"
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
-import { connectDB } from "@/lib/mongodb"
+import { connectDB } from "@/lib/mongodbdb"
 import Registration from "@/models/Registration"
 
 export async function GET(request) {
