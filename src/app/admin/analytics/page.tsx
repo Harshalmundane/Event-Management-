@@ -1,16 +1,36 @@
-"use client"
+"use client"; // Add this directive to mark as a Client Component
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, TrendingUp, DollarSign, Users, BarChart3, LogOut } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, TrendingUp, DollarSign, Users, BarChart3, LogOut } from "lucide-react";
+import Link from "next/link";
+
+// Define the shape of the dateRange state
+interface DateRange {
+  startDate: string; // Using string since input type="date" returns strings
+  endDate: string;
+}
+
+// Define the shape of the analytics data (aligned with /api/admin/analytics)
+interface AnalyticsData {
+  overview: {
+    totalRevenue: number;
+    totalTransactions: number;
+    averageTransactionValue: number;
+    conversionRate: number;
+  };
+  revenueByMonth: Array<{ month: string; transactions: number; revenue: number }>;
+  topEvents: Array<{ title: string; registrations: number; averagePrice: number; totalRevenue: number }>;
+  paymentMethods: Array<{ method: string; count: number; percentage: number }>;
+  recentTrends: Array<{ title: string; description: string; value: string; type: "positive" | "negative" | "neutral" }>;
+}
 
 export default function AnalyticsPage() {
-  const [analytics, setAnalytics] = useState({
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
     overview: {
       totalRevenue: 0,
       totalTransactions: 0,
@@ -21,20 +41,20 @@ export default function AnalyticsPage() {
     topEvents: [],
     paymentMethods: [],
     recentTrends: [],
-  })
-  const [loading, setLoading] = useState(true)
-  const [dateRange, setDateRange] = useState({
+  });
+  const [loading, setLoading] = useState(true);
+  const [ FITdateRange, setDateRange] = useState<DateRange>({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days ago
     endDate: new Date().toISOString().split("T")[0], // today
-  })
+  });
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [dateRange])
+    fetchAnalytics();
+  }, [dateRange]);
 
   const fetchAnalytics = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `/api/admin/analytics?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         {
@@ -42,35 +62,36 @@ export default function AnalyticsPage() {
             Authorization: `Bearer ${token}`,
           },
         },
-      )
+      );
 
       if (response.ok) {
-        const data = await response.json()
-        setAnalytics(data)
+        const data = await response.json();
+        setAnalytics(data.data); // Adjusted to match the API response structure { success: true, data: {...} }
       }
     } catch (error) {
-      console.error("Error fetching analytics:", error)
+      console.error("Error fetching analytics:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDateChange = (field, value) => {
-    setDateRange((prev) => ({ ...prev, [field]: value }))
-  }
+  // Fix TypeScript error by typing the field parameter
+  const handleDateChange = (field: keyof DateRange, value: string) => {
+    setDateRange((prev) => ({ ...prev, [field]: value }));
+  };
 
-  const formatPrice = (amount) => {
-    return `$${amount.toFixed(2)}`
-  }
+  const formatPrice = (amount: number) => {
+    return `$${amount.toFixed(2)}`;
+  };
 
-  const formatPercentage = (value) => {
-    return `${value.toFixed(1)}%`
-  }
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed Approximation(1)}%`;
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
-    window.location.href = "/"
-  }
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
 
   if (loading) {
     return (
@@ -80,7 +101,7 @@ export default function AnalyticsPage() {
           <p className="mt-4 text-gray-600">Loading analytics...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -345,5 +366,5 @@ export default function AnalyticsPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
