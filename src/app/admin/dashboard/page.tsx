@@ -19,7 +19,8 @@ interface Registration {
 interface Stats {
   totalRegistered: number;
   approvedRegistrations: number;
-  upcomingCount: number;
+  pendingRegistrations: number;
+  rejectedRegistrations: number;
 }
 
 interface ApiResponse {
@@ -27,12 +28,13 @@ interface ApiResponse {
   registrations: Registration[];
 }
 
-export default function UserDashboard() {
-  const [userRegistrations, setUserRegistrations] = useState<Registration[]>([])
+export default function AdminDashboard() {
+  const [registrations, setRegistrations] = useState<Registration[]>([])
   const [stats, setStats] = useState<Stats>({
     totalRegistered: 0,
     approvedRegistrations: 0,
-    upcomingCount: 0,
+    pendingRegistrations: 0,
+    rejectedRegistrations: 0,
   })
   const [notificationCount, setNotificationCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -45,7 +47,7 @@ export default function UserDashboard() {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("/api/user/dashboard", {
+      const response = await fetch("/api/admin/dashboard", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -54,7 +56,7 @@ export default function UserDashboard() {
       if (response.ok) {
         const data: ApiResponse = await response.json()
         setStats(data.stats)
-        setUserRegistrations(data.registrations)
+        setRegistrations(data.registrations)
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
@@ -66,7 +68,7 @@ export default function UserDashboard() {
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("/api/user/registrations", {
+      const response = await fetch("/api/admin/registrations", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -106,7 +108,8 @@ export default function UserDashboard() {
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A"
     return new Date(dateString).toLocaleDateString()
   }
 
@@ -128,13 +131,13 @@ export default function UserDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">My Dashboard</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
               <Badge variant="outline" className="ml-3">
-                User
+                Administrator
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/notifications">
+              <Link href="/admin/notifications">
                 <Button variant="outline" size="sm" className="relative bg-transparent">
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
@@ -159,21 +162,22 @@ export default function UserDashboard() {
         <div className="px-4 py-6 sm:px-0">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome, Admin!</h2>
             <p className="text-gray-600">
-              Manage your event registrations and stay updated with the latest activities.
+              Manage event registrations, payments, and create new events.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Registered</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalRegistered}</div>
-                <p className="text-xs text-muted-foreground">Events registered</p>
+                <p className="text-xs text-muted-foreground">Total registrations</p>
               </CardContent>
             </Card>
 
@@ -190,81 +194,94 @@ export default function UserDashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.upcomingCount}</div>
-                <p className="text-xs text-muted-foreground">Upcoming events</p>
+                <div className="text-2xl font-bold">{stats.pendingRegistrations}</div>
+                <p className="text-xs text-muted-foreground">Pending registrations</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.rejectedRegistrations}</div>
+                <p className="text-xs text-muted-foreground">Rejected registrations</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Events Section */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>My Registrations</CardTitle>
-                <CardDescription>Events you've registered for</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {userRegistrations.length > 0 ? (
-                    userRegistrations.slice(0, 3).map((registration) => (
-                      <div key={registration.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{registration.event?.title}</h3>
-                          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <div className="flex items-center">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              {formatDate(registration.event?.date)}
-                            </div>
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {registration.event?.time}
-                            </div>
-                            <div className="flex items-center">
-                              <MapPin className="w-4 h-4 mr-1" />
-                              {registration.event?.location}
-                            </div>
+          {/* Registrations Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Registrations</CardTitle>
+              <CardDescription>Latest event registrations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {registrations.length > 0 ? (
+                  registrations.slice(0, 5).map((registration) => (
+                    <div key={registration.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900">{registration.event?.title || "N/A"}</h3>
+                        <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {formatDate(registration.event?.date)}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {registration.event?.time || "N/A"}
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {registration.event?.location || "N/A"}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge className={getStatusColor(registration.status)}>{registration.status}</Badge>
-                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">No event registrations yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      <div className="flex items-center space-x-2">
+                        <Badge className={getStatusColor(registration.status)}>{registration.status}</Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No registrations found</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>What would you like to do?</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Link href="/events">
-                  <Button className="w-full justify-start">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Browse Events
-                  </Button>
-                </Link>
-                <Link href="/notifications">
-                  <Button className="w-full justify-start bg-transparent" variant="outline">
-                    <Bell className="w-4 h-4 mr-2" />
-                    My Notifications
-                    {notificationCount > 0 && (
-                      <Badge className="ml-auto px-1 py-0 text-xs min-w-[1.25rem] h-5">{notificationCount}</Badge>
-                    )}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Quick Actions */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Manage your events and registrations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Link href="/admin/create-event">
+                <Button className="w-full justify-start">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Create New Event
+                </Button>
+              </Link>
+              <Link href="/admin/registrations">
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Users className="w-4 h-4 mr-2" />
+                  Manage Registrations
+                </Button>
+              </Link>
+              <Link href="/admin/payments">
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Users className="w-4 h-4 mr-2" />
+                  Manage Payments
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
