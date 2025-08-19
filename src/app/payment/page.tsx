@@ -1,84 +1,91 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, CreditCard, Lock, Calendar, MapPin, Clock } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useState, useEffect, Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, CreditCard, Lock, Calendar, MapPin, Clock } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 // Define the Event interface
 interface Event {
-  title: string
-  description: string
-  date: string
-  time: string
-  location: string
-  currency?: string
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  currency?: string;
 }
 
 // Define the PaymentData interface
 interface PaymentData {
-  cardNumber: string
-  expiryDate: string
-  cvv: string
-  cardholderName: string
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  cardholderName: string;
 }
 
 // Define the Currency type
-type Currency = "USD" | "EUR" | "GBP" | "INR"
+type Currency = "USD" | "EUR" | "GBP" | "INR";
 
-export default function PaymentPage() {
-  const searchParams = useSearchParams()
-  const eventId = searchParams.get("eventId")
-  const amount = searchParams.get("amount")
+// Component to handle useSearchParams
+function PaymentContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("eventId");
+  const amount = searchParams.get("amount");
 
-  const [event, setEvent] = useState<Event | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [processing, setProcessing] = useState(false)
-  const [message, setMessage] = useState("")
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [message, setMessage] = useState("");
   const [paymentData, setPaymentData] = useState<PaymentData>({
     cardNumber: "",
     expiryDate: "",
     cvv: "",
     cardholderName: "",
-  })
+  });
 
   useEffect(() => {
     if (eventId) {
-      fetchEventDetails()
+      fetchEventDetails();
     }
-  }, [eventId])
+  }, [eventId]);
 
   const fetchEventDetails = async () => {
     try {
-      const response = await fetch(`/api/events/${eventId}`)
-      const data = await response.json()
+      const response = await fetch(`/api/events/${eventId}`);
+      const data = await response.json();
       if (response.ok) {
-        setEvent(data.event)
+        setEvent(data.event);
       }
     } catch (error) {
-      console.error("Error fetching event details:", error)
+      console.error("Error fetching event details:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setPaymentData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setPaymentData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setProcessing(true)
-    setMessage("")
+    e.preventDefault();
+    setProcessing(true);
+    setMessage("");
 
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/payment/process", {
         method: "POST",
         headers: {
@@ -90,24 +97,24 @@ export default function PaymentPage() {
           amount: Number.parseFloat(amount || "0"),
           paymentData,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        setMessage("Payment successful! Registration completed.")
+        setMessage("Payment successful! Registration completed.");
         setTimeout(() => {
-          window.location.href = "/dashboard"
-        }, 2000)
+          window.location.href = "/dashboard";
+        }, 2000);
       } else {
-        setMessage(data.message || "Payment failed")
+        setMessage(data.message || "Payment failed");
       }
     } catch (error) {
-      setMessage("Payment processing error. Please try again.")
+      setMessage("Payment processing error. Please try again.");
     } finally {
-      setProcessing(false)
+      setProcessing(false);
     }
-  }
+  };
 
   const formatPrice = (price: number, currency: Currency = "USD") => {
     const symbols: Record<Currency, string> = {
@@ -115,9 +122,9 @@ export default function PaymentPage() {
       EUR: "€",
       GBP: "£",
       INR: "₹",
-    }
-    return `${symbols[currency] || "$"}${price.toFixed(2)}`
-  }
+    };
+    return `${symbols[currency] || "$"}${price.toFixed(2)}`;
+  };
 
   if (loading) {
     return (
@@ -127,7 +134,7 @@ export default function PaymentPage() {
           <p className="mt-4 text-gray-600">Loading payment details...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!event) {
@@ -140,7 +147,7 @@ export default function PaymentPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -297,7 +304,9 @@ export default function PaymentPage() {
                     )}
                   </Button>
 
-                  <p className="text-xs text-gray-500 text-center">Your payment information is secure and encrypted</p>
+                  <p className="text-xs text-gray-500 text-center">
+                    Your payment information is secure and encrypted
+                  </p>
                 </form>
               </CardContent>
             </Card>
@@ -305,5 +314,14 @@ export default function PaymentPage() {
         </div>
       </main>
     </div>
-  )
+  );
+}
+
+// Main PaymentPage component with Suspense
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div>Loading payment page...</div>}>
+      <PaymentContent />
+    </Suspense>
+  );
 }
