@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,12 +11,30 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ArrowLeft, LogOut, Check, X, MessageSquare, Calendar, User, Mail } from "lucide-react"
 import Link from "next/link"
 
+// Define interfaces for type safety
+interface Registration {
+  _id: string;
+  eventId: { title: string; description: string; date: string; time: string; location: string };
+  userId: { name: string; email: string };
+  status: "pending" | "approved" | "rejected";
+  registrationDate: string;
+  message?: string;
+}
+
+interface SelectedRegistration extends Registration {
+  actionStatus: "approved" | "rejected";
+}
+
+interface ApiResponse {
+  registrations: Registration[];
+}
+
 export default function AdminRegistrations() {
-  const [registrations, setRegistrations] = useState([])
+  const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
-  const [processing, setProcessing] = useState(null)
+  const [processing, setProcessing] = useState<string | null>(null)
   const [message, setMessage] = useState("")
-  const [selectedRegistration, setSelectedRegistration] = useState(null)
+  const [selectedRegistration, setSelectedRegistration] = useState<SelectedRegistration | null>(null)
   const [adminMessage, setAdminMessage] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -31,7 +50,7 @@ export default function AdminRegistrations() {
           Authorization: `Bearer ${token}`,
         },
       })
-      const data = await response.json()
+      const data: ApiResponse = await response.json()
       if (response.ok) {
         setRegistrations(data.registrations)
       }
@@ -42,7 +61,7 @@ export default function AdminRegistrations() {
     }
   }
 
-  const handleApproval = async (registrationId, status, message = "") => {
+  const handleApproval = async (registrationId: string, status: "approved" | "rejected", message: string = "") => {
     setProcessing(registrationId)
     setMessage("")
 
@@ -79,7 +98,7 @@ export default function AdminRegistrations() {
     }
   }
 
-  const openMessageDialog = (registration, status) => {
+  const openMessageDialog = (registration: Registration, status: "approved" | "rejected") => {
     setSelectedRegistration({ ...registration, actionStatus: status })
     setDialogOpen(true)
   }
@@ -89,7 +108,7 @@ export default function AdminRegistrations() {
     window.location.href = "/"
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800"
@@ -102,7 +121,7 @@ export default function AdminRegistrations() {
     }
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -189,7 +208,7 @@ export default function AdminRegistrations() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class-good grid-cols-1 md:grid-cols-2 gap-6">
                       {/* User Information */}
                       <div className="space-y-3">
                         <h4 className="font-medium text-gray-900 flex items-center">
@@ -308,7 +327,7 @@ export default function AdminRegistrations() {
               </Button>
               <Button
                 onClick={() =>
-                  handleApproval(selectedRegistration._id, selectedRegistration.actionStatus, adminMessage)
+                  handleApproval(selectedRegistration!._id, selectedRegistration!.actionStatus, adminMessage)
                 }
                 disabled={processing === selectedRegistration?._id}
               >
